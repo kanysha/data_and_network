@@ -1,7 +1,10 @@
-package project5
+package tsk5
 
 import (
+	"encoding/csv"
+	"errors"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -18,11 +21,38 @@ func TestParseCSV(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ParseCSV(tt.line)
+			got, err := ParseCSV(tt.line)
+			if err != nil {
+				t.Fatalf("ParseCSV(%q) returned error: %v", tt.line, err)
+			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Fatalf("ParseCSV(%q) = %v, want %v", tt.line, got, tt.want)
 			}
 		})
+	}
+}
+
+func TestParseCSVInvalid(t *testing.T) {
+	_, err := ParseCSV(`"unclosed`)
+	if err == nil {
+		t.Fatal("ParseCSV() error = nil, want malformed CSV error")
+	}
+	var parseErr *csv.ParseError
+	if !errors.As(err, &parseErr) {
+		t.Fatalf("ParseCSV() error = %v, want wrapped csv.ParseError", err)
+	}
+	if !strings.Contains(err.Error(), "parse CSV line") {
+		t.Fatalf("ParseCSV() error = %v, want parsing context", err)
+	}
+}
+
+func TestParseCSVEmpty(t *testing.T) {
+	got, err := ParseCSV("")
+	if err != nil {
+		t.Fatalf("ParseCSV(empty) returned error: %v", err)
+	}
+	if got != nil {
+		t.Fatalf("ParseCSV(empty) = %v, want nil", got)
 	}
 }
 

@@ -2,17 +2,14 @@ package main
 
 import (
 	"fmt"
-	"sort"
+	"maps"
+	"slices"
 	"strings"
 )
 
 func wordFreq(text string) map[string]int {
 	freq := make(map[string]int)
-	words := strings.Split(text, " ")
-	for _, word := range words {
-		if word == "" {
-			continue
-		}
+	for _, word := range strings.Fields(text) {
 		freq[word]++
 	}
 	return freq
@@ -21,11 +18,7 @@ func wordFreq(text string) map[string]int {
 func reversePhonebook(book map[string]string) map[string]string {
 	// При совпадении телефонов выбираем лексикографически последнее имя.
 	// Явное правило делает результат независимым от случайного порядка map.
-	names := make([]string, 0, len(book))
-	for name := range book {
-		names = append(names, name)
-	}
-	sort.Strings(names)
+	names := slices.Sorted(maps.Keys(book))
 
 	reverse := make(map[string]string)
 	for _, name := range names {

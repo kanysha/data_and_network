@@ -100,7 +100,7 @@ func (s *Shortener) shortenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var code string
-	for attempt := 0; attempt < 10; attempt++ {
+	for range 10 {
 		generated, err := generateCode(6)
 		if err != nil {
 			log.Printf("generate code: %v", err)

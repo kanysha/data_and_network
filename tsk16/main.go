@@ -49,23 +49,12 @@ func (h *HashReader) Sum() string {
 	return hex.EncodeToString(h.hash.Sum(nil))
 }
 
-type countingWriter struct {
-	n int64
-}
-
-func (c *countingWriter) Write(p []byte) (int, error) {
-	c.n += int64(len(p))
-	return len(p), nil
-}
-
 func copyAndCount(dst io.Writer, src io.Reader) (int64, error) {
-	counter := &countingWriter{}
-	tee := io.TeeReader(src, counter)
-	written, err := io.Copy(dst, tee)
+	written, err := io.Copy(dst, src)
 	if err != nil {
 		return written, fmt.Errorf("copy data: %w", err)
 	}
-	return counter.n, nil
+	return written, nil
 }
 
 func main() {

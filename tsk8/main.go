@@ -2,7 +2,8 @@ package main
 
 import (
 	"fmt"
-	"sort"
+	"maps"
+	"slices"
 	"sync"
 )
 
@@ -77,21 +78,11 @@ func (c *Cache) Keys() []string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
 
-	keys := make([]string, 0, len(c.data))
-	for key := range c.data {
-		keys = append(keys, key)
-	}
-
-	sort.Strings(keys)
-	return keys
+	return slices.Sorted(maps.Keys(c.data))
 }
 
 func printGroupedStudents(grouped map[int][]string) {
-	grades := make([]int, 0, len(grouped))
-	for grade := range grouped {
-		grades = append(grades, grade)
-	}
-	sort.Ints(grades)
+	grades := slices.Sorted(maps.Keys(grouped))
 
 	for _, grade := range grades {
 		fmt.Printf("%d:%v\n", grade, grouped[grade])

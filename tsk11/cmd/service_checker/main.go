@@ -59,11 +59,9 @@ func main() {
 
 	var wg sync.WaitGroup
 	for _, targetURL := range urls {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
+		wg.Go(func() {
 			results <- checkURL(ctx, client, targetURL)
-		}()
+		})
 	}
 	go func() {
 		wg.Wait()

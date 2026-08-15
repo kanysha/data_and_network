@@ -1,8 +1,9 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -37,11 +38,11 @@ func analyzeLogs(logLines []string) []pathErrorCount {
 		items = append(items, pathErrorCount{Path: path, Errors: count})
 	}
 
-	sort.Slice(items, func(i, j int) bool {
-		if items[i].Errors == items[j].Errors {
-			return items[i].Path < items[j].Path
+	slices.SortFunc(items, func(a, b pathErrorCount) int {
+		if a.Errors == b.Errors {
+			return cmp.Compare(a.Path, b.Path)
 		}
-		return items[i].Errors > items[j].Errors
+		return cmp.Compare(b.Errors, a.Errors)
 	})
 
 	return items
@@ -103,10 +104,7 @@ func chunkBy(items []int, chunkSize int) [][]int {
 
 	chunks := make([][]int, 0, (len(items)+chunkSize-1)/chunkSize)
 	for start := 0; start < len(items); start += chunkSize {
-		end := start + chunkSize
-		if end > len(items) {
-			end = len(items)
-		}
+		end := min(start+chunkSize, len(items))
 		chunks = append(chunks, items[start:end])
 	}
 	return chunks

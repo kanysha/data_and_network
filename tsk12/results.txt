@@ -1,0 +1,29 @@
+Проверка HTTP/HTTPS и CORS
+
+Внешний сценарий:
+
+HTTPBIN_BASE=https://httpbingo.org HTTP_TIMEOUT=10 bash tsk12/http_requests.sh
+
+Результат (динамические заголовки и служебные поля сокращены):
+
+GET /get                 -> HTTP/2 200, method: GET
+POST /post               -> method: POST, JSON: {"name":"Alice","age":30}
+PUT /put                 -> method: PUT, JSON: {"name":"Alice","age":31}
+DELETE /delete           -> method: DELETE
+HEAD /get                -> HTTP/2 200
+GET /headers             -> X-Custom-Header: hello
+
+Локальный файловый сервер:
+
+$ curl -i http://127.0.0.1:8080/
+HTTP/1.1 200 OK
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: GET, HEAD, OPTIONS
+Access-Control-Allow-Origin: *
+Content-Type: text/html; charset=utf-8
+
+$ curl -i -X OPTIONS http://127.0.0.1:8080/
+HTTP/1.1 204 No Content
+Access-Control-Allow-Headers: Content-Type
+Access-Control-Allow-Methods: GET, HEAD, OPTIONS
+Access-Control-Allow-Origin: *

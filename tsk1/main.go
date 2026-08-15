@@ -4,12 +4,12 @@ import (
 	"fmt"
 )
 
-func mem_alloc(s []byte) []byte {
+func firstTenShared(s []byte) []byte {
 	a := s[:10]
 	return a
 }
 
-func mem_alloc2(s []byte) []byte {
+func firstTenCopied(s []byte) []byte {
 	a := make([]byte, 10)
 	copy(a, s[:10])
 	return a
@@ -34,14 +34,14 @@ func TaskOne() {
 func TaskTwo() {
 	s := make([]byte, 1<<20)
 	copy(s[0:10], []byte{1, 2, 3, 4, 5, 6, 7, 8, 9, 10})
-	a := mem_alloc(s)
+	a := firstTenShared(s)
 	fmt.Printf("Слайс первых 10 байт:%v\n", a)
-	b := mem_alloc2(s)
+	b := firstTenCopied(s)
 	fmt.Printf("Слайс первых 10 байт (с исправленной утечкой):%v\n", b)
 }
 
 func main() {
 	TaskOne()
 	TaskTwo()
-	fmt.Println("Бенчмарки: go test ./project_1 -bench=Append -benchmem")
+	fmt.Println("Бенчмарки: go test ./tsk1 -bench=Append -benchmem")
 }

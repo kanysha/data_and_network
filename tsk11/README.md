@@ -5,7 +5,7 @@
 ## URL Shortener
 
 ```bash
-go run ./project_11/cmd/url_shortener
+go run ./tsk11/cmd/url_shortener
 curl -X POST http://localhost:8080/shorten \
   -H 'Content-Type: application/json' \
   -d '{"url":"https://golang.org"}'
@@ -21,8 +21,8 @@ curl -v http://localhost:8080/s/ABC123
 ## HTTP-клиент с retry
 
 ```bash
-go run ./project_11/cmd/retry_client
-go run ./project_11/cmd/retry_client -url https://httpbin.org/status/500 -retries 2
+go run ./tsk11/cmd/retry_client
+go run ./tsk11/cmd/retry_client -url https://httpbin.org/status/500 -retries 2
 ```
 
 ## Проверка доступности сервисов
@@ -30,6 +30,6 @@ go run ./project_11/cmd/retry_client -url https://httpbin.org/status/500 -retrie
 Без аргументов проверяется встроенный список URL. Можно передать собственный список:
 
 ```bash
-go run ./project_11/cmd/service_checker
-go run ./project_11/cmd/service_checker https://go.dev https://github.com
+go run ./tsk11/cmd/service_checker
+go run ./tsk11/cmd/service_checker https://go.dev https://github.com
 ```

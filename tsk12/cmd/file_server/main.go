@@ -30,7 +30,7 @@ func corsFileHandler(directory string) http.Handler {
 
 func main() {
 	addr := flag.String("addr", ":8080", "HTTP-адрес для прослушивания")
-	directory := flag.String("dir", "project_12/public", "каталог со статическими файлами")
+	directory := flag.String("dir", "tsk12/public", "каталог со статическими файлами")
 	flag.Parse()
 
 	info, err := os.Stat(*directory)

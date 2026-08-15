@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"net/http"
-	"sort"
+	"slices"
 	"strings"
 	"time"
 )
@@ -29,11 +30,7 @@ func main() {
 	fmt.Println()
 
 	fmt.Println("Заголовки ответа:")
-	keys := make([]string, 0, len(resp.Header))
-	for key := range resp.Header {
-		keys = append(keys, key)
-	}
-	sort.Strings(keys)
+	keys := slices.Sorted(maps.Keys(resp.Header))
 	for _, key := range keys {
 		fmt.Printf("  %s: %s\n", key, strings.Join(resp.Header.Values(key), ", "))
 	}

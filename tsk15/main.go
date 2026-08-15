@@ -1,15 +1,17 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
 	"os/signal"
-	"sort"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -54,8 +56,8 @@ func (s *MemoryStore) GetAll() []Task {
 	for _, task := range s.tasks {
 		result = append(result, task)
 	}
-	sort.Slice(result, func(i, j int) bool {
-		return result[i].ID < result[j].ID
+	slices.SortFunc(result, func(a, b Task) int {
+		return cmp.Compare(a.ID, b.ID)
 	})
 	return result
 }
@@ -134,55 +136,42 @@ func decodeJSON(r *http.Request, value any) error {
 	if err := decoder.Decode(value); err != nil {
 		return fmt.Errorf("decode JSON: %w", err)
 	}
+	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		if err == nil {
+			return fmt.Errorf("decode JSON: multiple JSON values: %w", ErrBadRequest)
+		}
+		return fmt.Errorf("decode trailing JSON data: %w", err)
+	}
 	return nil
 }
 
-func parseID(path string) (int, error) {
-	parts := strings.Split(strings.TrimSuffix(path, "/"), "/")
-	if len(parts) < 3 || parts[len(parts)-1] == "" {
-		return 0, fmt.Errorf("no id in path: %w", ErrBadRequest)
-	}
-
-	id, err := strconv.Atoi(parts[len(parts)-1])
+func parseID(value string) (int, error) {
+	id, err := strconv.Atoi(value)
 	if err != nil || id <= 0 {
-		return 0, fmt.Errorf("invalid id %q: %w", parts[len(parts)-1], ErrBadRequest)
+		return 0, fmt.Errorf("invalid id %q: %w", value, ErrBadRequest)
 	}
 	return id, nil
 }
 
 type TaskHandler struct {
 	store Store
+	mux   *http.ServeMux
 }
 
 func NewTaskHandler(store Store) *TaskHandler {
-	return &TaskHandler{store: store}
+	handler := &TaskHandler{store: store}
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /tasks", handler.handleGetAll)
+	mux.HandleFunc("POST /tasks", handler.handleCreate)
+	mux.HandleFunc("GET /tasks/{id}", handler.handleGetByID)
+	mux.HandleFunc("PUT /tasks/{id}", handler.handleUpdate)
+	mux.HandleFunc("DELETE /tasks/{id}", handler.handleDelete)
+	handler.mux = mux
+	return handler
 }
 
 func (h *TaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch {
-	case r.URL.Path == "/tasks":
-		switch r.Method {
-		case http.MethodGet:
-			h.handleGetAll(w, r)
-		case http.MethodPost:
-			h.handleCreate(w, r)
-		default:
-			writeError(w, http.StatusMethodNotAllowed, "метод не поддерживается")
-		}
-	case strings.HasPrefix(r.URL.Path, "/tasks/"):
-		switch r.Method {
-		case http.MethodGet:
-			h.handleGetByID(w, r)
-		case http.MethodPut:
-			h.handleUpdate(w, r)
-		case http.MethodDelete:
-			h.handleDelete(w, r)
-		default:
-			writeError(w, http.StatusMethodNotAllowed, "метод не поддерживается")
-		}
-	default:
-		writeError(w, http.StatusNotFound, "маршрут не найден")
-	}
+	h.mux.ServeHTTP(w, r)
 }
 
 func (h *TaskHandler) handleGetAll(w http.ResponseWriter, r *http.Request) {
@@ -209,7 +198,7 @@ func (h *TaskHandler) handleGetAll(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) handleGetByID(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r.URL.Path)
+	id, err := parseID(r.PathValue("id"))
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -249,7 +238,7 @@ func (h *TaskHandler) handleCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) handleUpdate(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r.URL.Path)
+	id, err := parseID(r.PathValue("id"))
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return
@@ -279,7 +268,7 @@ func (h *TaskHandler) handleUpdate(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) handleDelete(w http.ResponseWriter, r *http.Request) {
-	id, err := parseID(r.URL.Path)
+	id, err := parseID(r.PathValue("id"))
 	if err != nil {
 		writeError(w, http.StatusBadRequest, err.Error())
 		return

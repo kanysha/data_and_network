@@ -7,13 +7,13 @@
 В первом терминале запустите сервер:
 
 ```bash
-go run ./project_10/cmd/tcp_server
+go run ./tsk10/cmd/tcp_server
 ```
 
 Во втором терминале запустите интерактивный клиент:
 
 ```bash
-go run ./project_10/cmd/tcp_client
+go run ./tsk10/cmd/tcp_client
 ```
 
 Сервер возвращает введённый текст в верхнем регистре. Сообщение `quit` завершает клиентское соединение.
@@ -23,13 +23,13 @@ go run ./project_10/cmd/tcp_client
 В первом терминале:
 
 ```bash
-go run ./project_10/cmd/udp_server
+go run ./tsk10/cmd/udp_server
 ```
 
 Во втором терминале:
 
 ```bash
-go run ./project_10/cmd/udp_client
+go run ./tsk10/cmd/udp_client
 ```
 
 ## Наблюдение за TCP
@@ -37,7 +37,9 @@ go run ./project_10/cmd/udp_client
 Пока TCP-сервер и клиент соединены, выполните:
 
 ```bash
-./project_10/observe_tcp.sh
+./tsk10/observe_tcp.sh
 ```
 
 Сценарий использует `ss` в Linux и автоматически переключается на `netstat`, если `ss` отсутствует.
+По умолчанию вывод фильтруется по учебному порту `9090`; другой порт можно передать через `PORT=...`.
+Пример фактического запуска и наблюдаемых состояний сохранён в `results.txt`.

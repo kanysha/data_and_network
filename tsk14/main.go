@@ -100,8 +100,7 @@ func main() {
 	}
 
 	err := validateUser("Алиса", -1)
-	var validationErr *ValidationError
-	if errors.As(err, &validationErr) {
+	if validationErr, ok := errors.AsType[*ValidationError](err); ok {
 		fmt.Printf("Ошибка валидации поля %q\n", validationErr.Field)
 	}
 

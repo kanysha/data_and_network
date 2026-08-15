@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// removeAll удаляет все вхождения target на месте.
+// Исходный слайс изменяется, после вызова следует использовать возвращённое значение.
 func removeAll(s []int, target int) []int {
 	write := 0
 	for _, v := range s {
@@ -16,6 +18,8 @@ func removeAll(s []int, target int) []int {
 	return s[:write]
 }
 
+// insertSorted вставляет v в отсортированный слайс.
+// При достаточной ёмкости исходный слайс и результат используют общий массив.
 func insertSorted(s []int, v int) []int {
 	idx := len(s)
 	for i, existing := range s {
@@ -43,8 +47,8 @@ func matrixTranspose(matrix [][]int) [][]int {
 		transposed[i] = make([]int, rows)
 	}
 
-	for i := 0; i < rows; i++ {
-		for j := 0; j < cols; j++ {
+	for i := range rows {
+		for j := range cols {
 			transposed[j][i] = matrix[i][j]
 		}
 	}

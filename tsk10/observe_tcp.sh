@@ -1,22 +1,16 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+port="${PORT:-9090}"
+
 if command -v ss >/dev/null 2>&1; then
-  echo "Все TCP-соединения:"
-  ss -tn
-  echo
-  echo "ESTABLISHED:"
-  ss -tn state established
-  echo
-  echo "TIME-WAIT:"
-  ss -tn state time-wait
-  echo
-  echo "Слушающие TCP-порты:"
-  ss -tln
+	echo "TCP-соединения для порта ${port}:"
+	ss -tan | awk -v port=":${port}" 'NR == 1 || index($4, port) || index($5, port)'
 elif command -v netstat >/dev/null 2>&1; then
-  echo "TCP-соединения в состояниях LISTEN, ESTABLISHED и TIME_WAIT:"
-  netstat -an -p tcp | awk 'NR <= 2 || /LISTEN|ESTABLISHED|TIME_WAIT/'
+	echo "TCP-соединения для порта ${port}:"
+	netstat -an -p tcp | awk -v dot_port=".${port}" -v colon_port=":${port}" \
+		'NR <= 2 || index($4, dot_port) || index($5, dot_port) || index($4, colon_port) || index($5, colon_port)'
 else
-  echo "Не найдено ни ss, ни netstat" >&2
-  exit 1
+	echo "Не найдено ни ss, ни netstat" >&2
+	exit 1
 fi

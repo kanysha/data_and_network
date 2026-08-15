@@ -1,27 +1,29 @@
-package project5
+package tsk5
 
 import (
 	"encoding/csv"
+	"errors"
+	"fmt"
 	"io"
 	"strings"
 	"unicode"
 )
 
-func ParseCSV(line string) []string {
+func ParseCSV(line string) ([]string, error) {
 	r := csv.NewReader(strings.NewReader(line))
 	r.FieldsPerRecord = -1
 	record, err := r.Read()
-	if err == io.EOF {
-		return []string{}
+	if errors.Is(err, io.EOF) {
+		return nil, nil
 	}
 	if err != nil {
-		return []string{}
+		return nil, fmt.Errorf("parse CSV line: %w", err)
 	}
-	return record
+	return record, nil
 }
 
 func Slugify(s string) string {
-	s = strings.TrimSpace(strings.ToLower(s))
+	s = strings.ToLower(s)
 	s = strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
 			return '-'
@@ -32,12 +34,22 @@ func Slugify(s string) string {
 		return -1
 	}, s)
 
-	for strings.Contains(s, "--") {
-		s = strings.ReplaceAll(s, "--", "-")
+	var result strings.Builder
+	result.Grow(len(s))
+	previousHyphen := false
+	for _, r := range s {
+		if r == '-' {
+			if previousHyphen || result.Len() == 0 {
+				continue
+			}
+			previousHyphen = true
+		} else {
+			previousHyphen = false
+		}
+		result.WriteRune(r)
 	}
 
-	s = strings.Trim(s, "-")
-	return s
+	return strings.TrimSuffix(result.String(), "-")
 }
 
 func ParseLog(line string) (level, timestamp, message string, err error) {
